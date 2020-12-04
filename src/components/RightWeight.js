@@ -1,27 +1,35 @@
-import React, { useCallback, useEffect, memo } from 'react';
+import React, { useEffect, memo } from 'react';
 import { WeightBody } from "./Weight";
-import {useDispatch} from "react-redux";
+import { useDispatch } from "react-redux";
 import { changeRightWeight } from "../reducers/actions";
-import styled from  'styled-components';
-import {collection, getRandomEl} from "./App";
+import styled from 'styled-components';
+import { collection, getRandomEl } from "./App";
 
-const RightWeightStyled = styled(WeightBody) `
+const RightWeightStyled = styled(WeightBody)`
     position: absolute;
     left: auto;
     right: 0;
     bottom: 0;
 `;
 
-const RightWeight = memo(() => {
+const RightWeight = memo(function RightWeight() {
     const dispatch = useDispatch();
 
-    const type = useCallback(getRandomEl(collection.types), []);
-    const mass = useCallback(getRandomEl(collection.masses), []);
-    const color = useCallback(getRandomEl(collection.colors), []);
+    const mass = getRandomEl(collection.masses);
+    const type = getRandomEl(collection.types);
+    const color = getRandomEl(collection.colors);
+    const position = Math.random() * (150);
 
     useEffect(() => {
-        dispatch(changeRightWeight(mass))
-    }, []);
+        let isMounted = true;
+
+        if (isMounted) {
+            dispatch(changeRightWeight(mass))
+        }
+
+        return () => isMounted = false;
+
+    }, [mass, dispatch]);
 
     return (
         <RightWeightStyled
@@ -29,7 +37,7 @@ const RightWeight = memo(() => {
             type={type}
             mass={mass}
             style={{
-                right: Math.random() * (150),
+                right: position,
             }}
         >
             {mass} Kg

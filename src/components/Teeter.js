@@ -38,6 +38,9 @@ const Teeter = memo(function Teeter({children, pause}) {
         if (!pause) {
             const currentAngle = checkAngle(leftStack.weight, rightStack.weight);
             newAngle(currentAngle, angle);
+
+            // console.log(`${leftStack.weight * 100} weight`)
+            // console.log(`${leftStack.position / 2} position`)
         }
 
     }, [leftStack, rightStack, angle, pause])

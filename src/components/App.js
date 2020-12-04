@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Weight from "./Weight";
 import Teeter from "./Teeter";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from 'styled-components';
 import RightWeight from "./RightWeight";
+import { addRightWeight } from "../reducers/actions";
 
 const MainWrap = styled.div`
     position: relative;
@@ -47,7 +48,14 @@ export const getRandomEl = (array) => {
 function App() {
     const [pause, setPause] = useState(false);
     const data = useSelector(state => state);
-    const {weights, weightsRight} = data;
+    const dispatch = useDispatch();
+    const {weights, weightsRight, score} = data;
+
+    useEffect(() => {
+        if (score % 2) {
+            dispatch(addRightWeight())
+        }
+    }, [score, dispatch])
 
     return (
         <MainWrap>

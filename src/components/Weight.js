@@ -1,7 +1,7 @@
-import React, { useState, useEffect, memo, useCallback } from 'react';
+import React, { useState, useEffect, memo, useCallback, useRef } from 'react';
 import styled from 'styled-components';
-import { useDispatch, useSelector } from "react-redux";
-import { changeWeight, addWeight, addRightWeight, addScore } from "../reducers/actions";
+import { useDispatch } from "react-redux";
+import { changeWeight, addWeight, addScore } from "../reducers/actions";
 import { collection } from "./App";
 import { getRandomEl } from "./App";
 
@@ -13,7 +13,7 @@ export const WeightBody = styled.div`
     height: calc(50px + ${props => props.mass}px * 3);
     transition: left transform ease .2s;
     display: flex;
-    align-items: ${props => props.type === 'triangle' ? 'flex-end' :'center'};
+    align-items: ${props => props.type === 'triangle' ? 'flex-end' : 'center'};
     justify-content: center;
     color: #ffffff;
     font-weight: 900;
@@ -41,51 +41,62 @@ const Weight = memo(function Weight({pause}) {
     const [verticalPosition, setVerticalPosition] = useState(-400);
     const [horizontalPosition, setHorizontalPosition] = useState(Math.ceil(Math.random() * (150)));
     const dispatch = useDispatch();
-    const data = useSelector(state => state);
 
     const type = useCallback(getRandomEl(collection.types), []);
     const mass = useCallback(getRandomEl(collection.masses), []);
     const color = useCallback(getRandomEl(collection.colors), []);
 
-    useEffect(() => {
-        if (!pause) {
-            if (verticalPosition !== 0) {
-                weightDrop();
-            } else {
-                setFly(false);
-                dispatch(addWeight(prev => prev++));
-                dispatch(changeWeight(mass, horizontalPosition));
-                dispatch(addScore(1));
-
-                if (data.score % 2) {
-                    dispatch(addRightWeight(prev => prev++));
-                }
-            }
-        }
-    }, [verticalPosition, dispatch, pause])
+    const stateRef = useRef(horizontalPosition);
 
     useEffect(() => {
-        window.addEventListener('keydown', changeHorizontal)
-
-        if (!fly) {
-            window.removeEventListener('keydown', changeHorizontal);
-        }
-
-    }, [fly])
-
-    const weightDrop = () => {
-        return setTimeout(() => setVerticalPosition(verticalPosition + 1), 6)
-    }
+        stateRef.current = horizontalPosition;
+    }, [horizontalPosition])
 
     const changeHorizontal = useCallback((e) => {
-        if (e.key === "ArrowLeft") {
+
+        if (e.key === "ArrowLeft" && stateRef.current > 0) {
             setHorizontalPosition(prev => prev - 7);
         }
 
-        if (e.key === "ArrowRight") {
+        if (e.key === "ArrowRight" && stateRef.current < 150) {
             setHorizontalPosition(prev => prev + 7);
         }
-    }, [])
+
+    }, []);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        if (isMounted) {
+            if (!pause) {
+                if (verticalPosition !== 0) {
+                    setTimeout(() => setVerticalPosition(verticalPosition + 1), 6)
+                } else {
+                    setFly(false);
+                    dispatch(addWeight(prev => prev++));
+                    dispatch(changeWeight(mass, horizontalPosition));
+                    dispatch(addScore(1));
+                }
+            }
+        }
+
+        return () => isMounted = false
+    }, [verticalPosition, dispatch, pause, mass, horizontalPosition])
+
+    useEffect(() => {
+        let isMounted = true;
+
+        if (isMounted && fly) {
+            window.addEventListener('keydown', changeHorizontal);
+        } else if (isMounted && !fly) {
+            window.removeEventListener('keydown', changeHorizontal);
+        }
+
+        return () => {
+            isMounted = false;
+        }
+
+    }, [fly, changeHorizontal])
 
     return (
         <WeightBody
