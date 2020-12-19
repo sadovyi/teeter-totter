@@ -1,15 +1,12 @@
 import React from 'react';
-import './GameOver.css';
+import Menu from "../shared/Menu";
 
 const GameOver = () => {
-    return (
-        <div className="card">
-            <h2>
-                Game Over
-            </h2>
-            <p>Thanks for playing</p>
-        </div>
-    )
+  return (
+    <Menu title='Game over' description='Thanks for playing' >
+      <button>Play again</button>
+    </Menu>
+  )
 }
 
 export default GameOver;
